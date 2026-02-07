@@ -1,0 +1,29 @@
+{
+  "name": "battleship-backend",
+  "version": "1.0.0",
+  "description": "Battleship board's game Backend with online matching",
+  "keywords": [
+    "Battleship",
+    "Board",
+    "Game"
+  ],
+  "license": "ISC",
+  "author": "Deko",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --hot run index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.6"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
