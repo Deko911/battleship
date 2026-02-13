@@ -1,7 +1,8 @@
 type Env = {
     PORT?: string,
     MONGODB_URI: string,
-    JWT_TOKEN: string
+    JWT_TOKEN: string,
+    SALT_ROUNDS: string
 }
 
 function validateEnv(): Env {

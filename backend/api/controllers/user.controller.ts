@@ -1,0 +1,37 @@
+import type { Request, Response } from "express";
+import UserServices from "../services/user.service";
+import type { UserRecord } from "../models/user";
+
+export default class UserController {
+    static async getAllUsers(req: Request, res: Response) {
+        const users = await UserServices.getAllUsers()
+        return res.json(users)
+    }
+    
+    static async getUserById(req: Request, res: Response, id: string) {
+        const user = await UserServices.getFilteredUser({ _id: id })
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        return res.json(user)
+    }
+    
+    static async getUserByEmail(req: Request, res: Response, email: string) {
+        const user = await UserServices.getFilteredUser({ email })
+        if (!user) {
+            return res.status(404).json({ error: "User not found" })
+        }
+        return res.json(user)
+    }
+    
+    static async createUser(req: Request, res: Response) {
+        let userData: UserRecord = {...req.body};
+        const newUser = await UserServices.createUser(userData)
+        return res.status(201).json(newUser)
+    }
+        
+    static async deleteUserById(req: Request, res: Response, id: string) {
+        await UserServices.deleteUserById(id)
+        return res.status(204).end()
+    }
+}
