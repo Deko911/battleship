@@ -1,4 +1,4 @@
-import { Schema, Types, model, type Document } from "mongoose";
+import { Schema, model, type Document } from "mongoose";
 
 export interface UserDocument extends Document {
     username: string,
@@ -26,11 +26,7 @@ const userSchema = new Schema<UserDocument>({
             type: String,
             required: [true, "Email is required"],
             minlength: [5, "email is too short"],
-            validate: {
-                validator: function(v) {
-                    return /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/.test(v)
-                }
-            },
+            match: [/^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/, "Email is not valid"],
             trim: true,
             lowercase: true
         },
@@ -64,12 +60,12 @@ const userSchema = new Schema<UserDocument>({
     }
 )
 
-userSchema.index({ wins: 1 })
+userSchema.index({ wins: -1 })
 
 export const UserModel = model<UserDocument>('User', userSchema)
 
 export type UserDocumentParsed = {
-    id: Types.ObjectId,
+    id: string,
     username: string,
     email: string,
     wins: number,
@@ -80,7 +76,7 @@ export type UserDocumentLean = UserDocument & { __v?: number }
 export const parseUserDocument = (user: UserDocumentLean): UserDocumentParsed => {
     const {_id, password: _passworld, __v: _version, ...rest} = user;
     return {
-        id: _id,
+        id: _id.toString(),
         username: rest.username,
         email: rest.email,
         wins: rest.wins
