@@ -4,12 +4,12 @@ import cors from "cors";
 import config from "./utils/config";
 import mongoose from "mongoose";
 import apiRouter from "./api/api";
-
-await mongoose.connect("mongodb://localhost:27017/battleship")
+import connectDB from "./utils/db";
 
 const app = express();
 const port = config.PORT;
 
+await connectDB()
 
 app.use(helmet())
 app.use(cors())
