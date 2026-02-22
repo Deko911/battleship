@@ -1,10 +1,11 @@
-import { Schema, model, type Document } from "mongoose";
+import { Schema, Types, model, type Document } from "mongoose";
 
 export interface UserDocument extends Document {
     username: string,
     email: string,
     password: string,
-    wins: number
+    wins: number,
+    currentMatch: Types.ObjectId | null
 }
 
 export interface UserRecord {
@@ -56,6 +57,11 @@ const userSchema = new Schema<UserDocument>({
             type: Number,
             min: [0, "Wins cannot be negative"],
             default: 0
+        },
+        currentMatch: {
+            type: Schema.Types.ObjectId,
+            ref: 'Match',
+            default: null
         }
     }
 )
@@ -69,6 +75,7 @@ export type UserDocumentParsed = {
     username: string,
     email: string,
     wins: number,
+    currentMatch: string | undefined
 }
 
 export type UserDocumentLean = UserDocument & { __v?: number }
@@ -79,7 +86,8 @@ export const parseUserDocument = (user: UserDocumentLean): UserDocumentParsed =>
         id: _id.toString(),
         username: rest.username,
         email: rest.email,
-        wins: rest.wins
+        wins: rest.wins,
+        currentMatch: rest.currentMatch?.toString()
     }
 }
 

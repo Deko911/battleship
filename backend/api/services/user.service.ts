@@ -38,7 +38,11 @@ export default class UserServices {
         return UserModel.findByIdAndDelete(id).exec()
     }
 
+    static async updateMatchById(id: string, match: string) {
+        return UserModel.findByIdAndUpdate(id, { currentMatch: match }, { new: true })
+    }
+
     static async updateWinsById(id: string) {
-        return UserModel.findByIdAndUpdate(id, { $inc: { wins: 1 } }, { new: true })
+        return UserModel.findByIdAndUpdate(id, { $inc: { wins: 1 }, currentMatch: null }, { new: true })
     }
 }

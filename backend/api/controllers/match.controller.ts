@@ -35,14 +35,16 @@ export default class MatchController {
     static async createMatch(req: Request, res: Response) {
         const matchData: MatchRecord = parseCreateMatch(req.body)
         const player1 = await UserServices.getFilteredUser({ _id: matchData.player1 })
-        if (!player1) {
+        if (!player1 || player1.currentMatch) {
             return res.status(400).json({ error: 'Player1 is not available' })
         }
         const player2 = await UserServices.getFilteredUser({ _id: matchData.player2 })
-        if (!player2) {
+        if (!player2 || player2.currentMatch) {
             return res.status(400).json({ error: 'Player2 is not available' })
         }
         const newMatch = await MatchService.createMatch(matchData)
+        await UserServices.updateMatchById(matchData.player1, newMatch.id)
+        await UserServices.updateMatchById(matchData.player2, newMatch.id)
         return res.json(newMatch)
     }
 
@@ -60,7 +62,7 @@ export default class MatchController {
         if (match.player1.toString() !== winnerId && match.player2.toString() !== winnerId) {
             return res.status(400).json({ error: 'Player is not in the match' })
         }
-        UserServices.updateWinsById(winnerId)
+        await UserServices.updateWinsById(winnerId)
 
         const updatedMatch = await MatchService.finishMatch(id, winnerId)
         return res.json(updatedMatch)
