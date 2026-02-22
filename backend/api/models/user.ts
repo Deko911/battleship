@@ -10,8 +10,8 @@ export interface UserDocument extends Document {
 export interface UserRecord {
     username: string,
     email: string,
-    password: string
-    wins?: number
+    password: string,
+    wins: number
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -80,5 +80,14 @@ export const parseUserDocument = (user: UserDocumentLean): UserDocumentParsed =>
         username: rest.username,
         email: rest.email,
         wins: rest.wins
+    }
+}
+
+export const parseCreateUser = (user: any): UserRecord => {
+    return {
+        username: user.username,
+        email: user.email,
+        password: user.password,
+        wins: 0
     }
 }

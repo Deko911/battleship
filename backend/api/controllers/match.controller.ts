@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import type { MatchRecord } from "../models/match";
+import { parseCreateMatch, type MatchRecord } from "../models/match";
 import MatchService from "../services/match.service";
 import UserServices from "../services/user.service";
 
@@ -33,7 +33,15 @@ export default class MatchController {
     }
 
     static async createMatch(req: Request, res: Response) {
-        const matchData: MatchRecord = req.body
+        const matchData: MatchRecord = parseCreateMatch(req.body)
+        const player1 = await UserServices.getFilteredUser({ _id: matchData.player1 })
+        if (!player1) {
+            return res.status(400).json({ error: 'Player1 is not available' })
+        }
+        const player2 = await UserServices.getFilteredUser({ _id: matchData.player2 })
+        if (!player2) {
+            return res.status(400).json({ error: 'Player2 is not available' })
+        }
         const newMatch = await MatchService.createMatch(matchData)
         return res.json(newMatch)
     }

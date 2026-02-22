@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import UserServices from "../services/user.service";
-import type { UserRecord } from "../models/user";
+import { parseCreateUser, type UserRecord } from "../models/user";
 
 export default class UserController {
     static async getAllUsers(req: Request, res: Response) {
@@ -30,7 +30,7 @@ export default class UserController {
     }
     
     static async createUser(req: Request, res: Response) {
-        let userData: UserRecord = req.body
+        let userData: UserRecord = parseCreateUser(req.body)
         const newUser = await UserServices.createUser(userData)
         return res.status(201).json(newUser)
     }

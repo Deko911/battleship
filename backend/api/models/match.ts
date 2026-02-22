@@ -89,3 +89,10 @@ export function parseMatchDocument(match: MatchDocumentLean): MatchDocumentParse
         date: match.date
     }
 }
+
+export function parseCreateMatch(match: any): MatchRecord {
+    return {
+        player1: match.player1,
+        player2: match.player2
+    }
+}
