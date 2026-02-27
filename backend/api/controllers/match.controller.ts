@@ -45,7 +45,7 @@ export default class MatchController {
         const newMatch = await MatchService.createMatch(matchData)
         await UserServices.updateMatchById(matchData.player1, newMatch.id)
         await UserServices.updateMatchById(matchData.player2, newMatch.id)
-        return res.json(newMatch)
+        return res.status(201).json(newMatch)
     }
 
     static async finishMatch(req: Request, res: Response) {
@@ -58,7 +58,6 @@ export default class MatchController {
         if (match.finished) {
             return res.status(400).json({ error: 'Match is already finished' })
         }
-        console.log(match, winnerId);
         if (match.player1.toString() !== winnerId && match.player2.toString() !== winnerId) {
             return res.status(400).json({ error: 'Player is not in the match' })
         }

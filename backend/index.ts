@@ -2,10 +2,8 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import config from "./utils/config";
-import mongoose from "mongoose";
 import apiRouter from "./api/api";
 import connectDB from "./utils/db";
-
 const app = express();
 const port = config.PORT;
 
@@ -28,3 +26,6 @@ app.use("/api", apiRouter)
 app.listen(port, () => {
   console.log(`Listening on http://localhost:${port}...`);
 });
+
+
+export default app
