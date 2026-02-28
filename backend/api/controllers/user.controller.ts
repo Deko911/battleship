@@ -29,12 +29,6 @@ export default class UserController {
         return res.json(user)
     }
     
-    static async createUser(req: Request, res: Response) {
-        let userData: UserRecord = parseCreateUser(req.body)
-        const newUser = await UserServices.createUser(userData)
-        return res.status(201).json(newUser)
-    }
-        
     static async deleteUserById(req: Request, res: Response) {
         let id = req.params.id as string
         await UserServices.deleteUserById(id)

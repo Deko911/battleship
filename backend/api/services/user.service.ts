@@ -13,6 +13,19 @@ export default class UserServices {
         return users.map(parseUserDocument)
     }
 
+    static async getFilteredUnParsedUser(filter: UserFilters) {
+        let filters: Record<string, unknown> = {};
+        for (const key of Object.keys(filter)) {
+            const filt = filter[key as keyof UserFilters];
+            if (filt !== undefined) {
+                filters[key] = filt
+            }
+        }
+        const user = await UserModel.findOne(filter).lean().exec()
+        if (!user) {return null}
+        return user
+    }
+
     static async getFilteredUser(filter: UserFilters) {
         let filters: Record<string, unknown> = {};
         for (const key of Object.keys(filter)) {

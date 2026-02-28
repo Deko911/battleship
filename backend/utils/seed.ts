@@ -2,6 +2,8 @@ import { UserModel } from "../api/models/user";
 import { MatchModel } from "../api/models/match";
 import bcrypt from "bcryptjs";
 import config from "./config";
+import mongoose from "mongoose";
+import connectDB from "./db";
 
 export const initialUsers = [
     {
@@ -60,6 +62,9 @@ export let matchIds: string[] = []
 export let playersMatchIds: { player1: string, player2: string }[] = []
 
 export async function initDb() {
+    if (!mongoose.connection.db) {
+        await connectDB()
+    }
     playerIds = {}
     playersMatchIds = []
     matchIds = []

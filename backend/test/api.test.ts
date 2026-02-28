@@ -7,6 +7,10 @@ import { initialUsers, initialMatches, initDb, playerIds, playersMatchIds, match
 
 const api = supertest(app)
 
+async function loginUser(email: string, password: string) {
+    const response = await api.post('/api/auth/login').send({ email, password }).expect(200)
+    return response.body.token as string
+}
 beforeEach(async () => {
     await initDb()
 })
@@ -53,20 +57,25 @@ beforeEach(async () => {
         assert.deepStrictEqual(expectedUser, gettedUser)
     })
 
-    test('users can be created safely', async () => {
+    // user creation / registration moved to Auth tests (use /api/auth/register)
+})
+
+describe('Auth', async () => {
+    test('users can register safely and receive token', async () => {
         const user = {
             username: "Taylor",
             email: "taylor@email.com",
             password: "Taylor.1234"
         }
-        const response = await api.post('/api/user').send(user).expect(201)
-        const createdUser = response.body
-        const {password: _password, ...expectedUser} = {...createdUser, ...user}
-
+        const response = await api.post('/api/auth/register').send(user).expect(201)
+        const body = response.body
+        assert.ok(body.token)
+        const createdUser = body.user
+        const { password: _password, ...expectedUser } = { ...createdUser, ...user }
         assert.deepStrictEqual(expectedUser, createdUser)
     })
 
-    test('sending more information will be ignored', async () => {
+    test('sending more information will be ignored on register', async () => {
         const user = {
             username: "Taylor",
             email: "taylor@email.com",
@@ -74,19 +83,20 @@ beforeEach(async () => {
             foo: '1234',
             wins: 10
         }
-        const response = await api.post('/api/user').send(user).expect(201)
-        const createdUser = response.body
-        const {password: _password, foo: _foo, ...expectedUser} = {...createdUser, ...user, wins: 0}
-
+        const response = await api.post('/api/auth/register').send(user).expect(201)
+        const body = response.body
+        assert.ok(body.token)
+        const createdUser = body.user
+        const { password: _password, foo: _foo, ...expectedUser } = { ...createdUser, ...user, wins: 0 }
         assert.deepStrictEqual(expectedUser, createdUser)
     })
 
-    test('sending missing information will throw error', async () => {
+    test('sending missing information will throw error on register', async () => {
         const user = {
             username: "Taylor",
             password: "Taylor.1234"
         }
-        await api.post('/api/user').send(user).expect(400)
+        await api.post('/api/auth/register').send(user).expect(400)
     })
 })
 
@@ -132,7 +142,10 @@ describe('Matches', async () => {
         test('Filter by user and won', async () => {
             const player = playersMatchIds[0]!.player1
             const matchId = matchIds[0]
-            await api.patch(`/api/match/finish/${matchId}`).send({ winnerId: player })
+            const username = Object.keys(playerIds).find(k => playerIds[k] === player)!
+            const user = initialUsers.find(u => u.username === username)!
+            const token = await loginUser(user.email, user.password)
+            await api.patch(`/api/match/finish/${matchId}`).set('Authorization', `Bearer ${token}`).send({ winnerId: player })
             const response = await api.get(`/api/match?playerId=${player}&won=true`);
             const match = response.body[0]
             assert.ok(match.player1.id === player || match.player2.id === player)
@@ -156,7 +169,9 @@ describe('Matches', async () => {
             player1,
             player2
         }
-        const response = await api.post('/api/match').send(match).expect(201)
+        const authUser = initialUsers[4]!
+        const token = await loginUser(authUser.email, authUser.password)
+        const response = await api.post('/api/match').set('Authorization', `Bearer ${token}`).send(match).expect(201)
         const createdMatch = response.body
 
         assert.ok(createdMatch.player1.id === player1 || createdMatch.player2.id === player1)
@@ -173,7 +188,9 @@ describe('Matches', async () => {
             player2,
             foo: '123'
         }
-        const response = await api.post('/api/match').send(match).expect(201)
+        const authUser = initialUsers[4]!
+        const token = await loginUser(authUser.email, authUser.password)
+        const response = await api.post('/api/match').set('Authorization', `Bearer ${token}`).send(match).expect(201)
         const createdMatch = response.body
 
         assert.ok(createdMatch.player1.id === player1 || createdMatch.player2.id === player1)
@@ -189,7 +206,10 @@ describe('Matches', async () => {
             player1,
             player2
         }
-        await api.post('/api/match').send(match).expect(400)
+        const username = Object.keys(playerIds).find(k => playerIds[k] === player1)!
+        const user = initialUsers.find(u => u.username === username)!
+        const token = await loginUser(user.email, user.password)
+        await api.post('/api/match').set('Authorization', `Bearer ${token}`).send(match).expect(400)
     })
 
     test('sending missing information will throw error', async () => {
@@ -197,7 +217,9 @@ describe('Matches', async () => {
         const match = {
             player1
         }
-        await api.post('/api/match').send(match).expect(400)
+        const authUser = initialUsers[4]!
+        const token = await loginUser(authUser.email, authUser.password)
+        await api.post('/api/match').set('Authorization', `Bearer ${token}`).send(match).expect(400)
     })
 })
 

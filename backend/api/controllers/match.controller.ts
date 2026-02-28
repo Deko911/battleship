@@ -33,15 +33,26 @@ export default class MatchController {
     }
 
     static async createMatch(req: Request, res: Response) {
+        let userData = req.user
+        if (!userData || !userData.id) {
+            return res.status(401).send({ error: "You have to login to create a match" })
+        }
+
         const matchData: MatchRecord = parseCreateMatch(req.body)
         const player1 = await UserServices.getFilteredUser({ _id: matchData.player1 })
         if (!player1 || player1.currentMatch) {
             return res.status(400).json({ error: 'Player1 is not available' })
         }
+
         const player2 = await UserServices.getFilteredUser({ _id: matchData.player2 })
         if (!player2 || player2.currentMatch) {
             return res.status(400).json({ error: 'Player2 is not available' })
         }
+
+        if (userData.id !== player1.id && userData.id !== player2.id) {
+            return res.status(401).send( { error: "User id does not match with players id" } )
+        }
+
         const newMatch = await MatchService.createMatch(matchData)
         await UserServices.updateMatchById(matchData.player1, newMatch.id)
         await UserServices.updateMatchById(matchData.player2, newMatch.id)
@@ -49,6 +60,11 @@ export default class MatchController {
     }
 
     static async finishMatch(req: Request, res: Response) {
+        let userData = req.user
+        if (!userData || !userData.id) {
+            return res.status(401).send({ error: "You have to login to create a match" })
+        }
+
         const id = req.params.matchId as string
         const winnerId = req.body.winnerId as string
         const match = await MatchService.getMatchById(id)
@@ -61,6 +77,11 @@ export default class MatchController {
         if (match.player1.toString() !== winnerId && match.player2.toString() !== winnerId) {
             return res.status(400).json({ error: 'Player is not in the match' })
         }
+
+        if (userData.id !== match.player1._id.toString() && userData.id !== match.player2._id.toString()) {
+            return res.status(401).send( { error: "User id does not match with players id" } )
+        }
+
         await UserServices.updateWinsById(winnerId)
 
         const updatedMatch = await MatchService.finishMatch(id, winnerId)
